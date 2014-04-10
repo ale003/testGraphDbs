@@ -1,8 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+// ============================================================================================================== 
+// © 2014 Cognitum. All rights reserved.  
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance  
+// with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
+// Unless required by applicable law or agreed to in writing, software distributed under the License is  
+// distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+// See the License for the specific language governing permissions and limitations under the License. 
+// ============================================================================================================== 
 package eu.cognitum.readandwrite;
 
 import com.tinkerpop.blueprints.KeyIndexableGraph;
@@ -26,8 +30,10 @@ import org.openrdf.repository.sail.SailRepository;
 
 /**
  *
- * author Admin
- */
+ * @author Alessandro Seganti (Data Engineer @Cognitum)
+ * @version     0.0
+ * @since       2014-04-10
+ * @copyright Cognitum, Poland 2014 */
 public class GraphDbTesting {
 
     protected String _currentNamespace = "http://www.ontorion.com/testontology.owl#";
@@ -73,12 +79,13 @@ public class GraphDbTesting {
         sr.shutDown();
     }
 
-        /// <summary>
-    /// Reads the informations from the graph using sparql.... queryType decides which kind of query we want to do.
-    /// </summary>
-    /// <param name="queryType">The type of the query to execute</param>
-    /// <param name="Ntrials">The number of times a query should be executed (more trials, more precision)</param>
-    /// <returns>The mean time it took to execute the query</returns>
+        /**
+    * Reads the informations from the graph using sparql.... queryType decides which kind of query we want to do.
+    * @param queryType The type of the query to execute
+    * @param Ntrials The number of times a query should be executed (more trials, more precision)
+    * @return The mean time it took to execute the query
+
+    */
     public StdMeasures testRead(PrintWriter logInfo, int queryType,int Ntrials, boolean printlnAllLogs, String fileLog)
         {
             StopWatch functionTime = new StopWatch();

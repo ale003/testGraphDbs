@@ -15,7 +15,11 @@ import com.thinkaurelius.titan.core.TitanGraph;
 import com.tinkerpop.blueprints.impls.neo4j.Neo4jGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.oupls.sail.GraphSail;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -31,6 +35,7 @@ import org.openrdf.repository.sail.SailRepository;
  * @copyright Cognitum, Poland 2014 
  */
 public class App {
+    private static final Logger LOGGER = Logger.getLogger(App.class.getName());
 
     public static enum DBS {
 
@@ -39,11 +44,34 @@ public class App {
         ORIENT
     }
 
+    private static final String
+        PROP_STORAGE_HOSTNAME = "storage.hostname",
+        PROP_STORAGE_KEYSPACE = "storage.keyspace";
+
+    private static Properties CONFIGURATION;
+
+    public static Properties getConfiguration() {
+        return CONFIGURATION;
+    }
+
     public static void main(String[] args) {
         try {
+            String configFile = 0 == args.length
+                    ? "example.properties"
+                    : args[0];
 
-            String ip = "192.168.0.129";
-            String keyspace = "testKeysp";
+            CONFIGURATION = new Properties();
+            File f = new File(configFile);
+            if (!f.exists()) {
+                LOGGER.warning("configuration not found at " + configFile);
+                return;
+            }
+            LOGGER.info("loading configuration file " + f.getAbsoluteFile());
+            CONFIGURATION.load(new FileInputStream(f));
+
+            String ip = CONFIGURATION.getProperty(PROP_STORAGE_HOSTNAME);
+            String keyspace = CONFIGURATION.getProperty(PROP_STORAGE_KEYSPACE);
+
             // N of articles to be generated.
             int Narticles = 100;
             // size of the buffer to commit each time
@@ -102,7 +130,7 @@ public class App {
             }
 
         } catch (Exception ex) {
-            Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
         }
     }
 

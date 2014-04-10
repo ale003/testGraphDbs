@@ -1,4 +1,4 @@
-package com.mycompany.readandwrite;
+package eu.cognitum.readandwrite;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

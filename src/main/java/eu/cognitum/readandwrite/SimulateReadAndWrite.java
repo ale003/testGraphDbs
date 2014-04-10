@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.readandwrite;
+package eu.cognitum.readandwrite;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -110,11 +110,7 @@ public class SimulateReadAndWrite extends Thread {
             swrReads.println(line);
 
             logInfo = new PrintWriter(outputName + "LogInfo.txt");
-        } catch (Exception ex) {
-            return;
-        }
-
-        try {
+            
             for (int i = _step; i < _NelementsFinal + 1; i += _step) {
                 if (!_stopped) {
                     Work(logInfo, swrWrites, swrReads, i);
@@ -215,7 +211,7 @@ public class SimulateReadAndWrite extends Thread {
     /// </summary>
     /// <param name="swrWrites"></param>
     /// <param name="swrReads"></param>
-    public void Work(PrintWriter logInfo, PrintWriter swrWrites, PrintWriter swrReads, int el) {
+    public void Work(PrintWriter logInfo, PrintWriter swrWrites, PrintWriter swrReads, int el) throws Exception {
         logInfo.write("Nelements:" + el + "...Writing\n");
         int offset = el - _step;
         writeTiming(logInfo, swrWrites, el, offset);
@@ -230,8 +226,7 @@ public class SimulateReadAndWrite extends Thread {
     /// <summary>
     /// timing for various write configurations
     /// </summary>
-    public void writeTiming(PrintWriter logInfo, PrintWriter swr, int Narticles, int offset) {
-        try {
+    public void writeTiming(PrintWriter logInfo, PrintWriter swr, int Narticles, int offset) throws Exception {
             logInfo.write("Writing....\n");
             // standard configurations
             Map<Integer, Long> commitTime = _graphDbTest.testWrite(logInfo, Narticles, offset);
@@ -249,9 +244,6 @@ public class SimulateReadAndWrite extends Thread {
             }
             
             lastCommitTime += tmpCommitTime;
-        } catch (Exception ex) {
-            Logger.getLogger(SimulateReadAndWrite.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     /// <summary>

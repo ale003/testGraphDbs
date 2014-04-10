@@ -1,4 +1,4 @@
-package com.mycompany.readandwrite;
+package eu.cognitum.readandwrite;
 
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
@@ -32,11 +32,11 @@ public class App {
             String ip = "192.168.0.129";
             String keyspace = "testKeysp";
             // N of articles to be generated.
-            int Narticles = 100000;
+            int Narticles = 100;
             // size of the buffer to commit each time
-            int commitBufferSize = 100;
+            int commitBufferSize = 10;
             // N of articles to commit before trying reads
-            int readStep = 100;
+            int readStep = 10;
 
             ArrayList<SimulateReadAndWrite> simulateAll = new ArrayList<SimulateReadAndWrite>();
 
@@ -81,7 +81,7 @@ public class App {
                     if (simulateAll.get(k).IsProcessCompleted()) {
                         Nfinished++;
                     } else {
-                        System.out.println("Process for db " + dbs.toString() + " is at " + simulateAll.get(k).GetProgress());
+                        System.out.println(String.format("Process for db %s is at %.2f", dbs.toString(),simulateAll.get(k).GetProgress()));
                     }
                     k++;
                 }

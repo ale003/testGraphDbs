@@ -58,7 +58,7 @@ public class SimulateReadAndWrite extends Thread {
     private boolean _error = false;
     private int _NelementsCurrent = 0;
     private boolean _skipReadingAndWriteOutputToFile = false;
-    private int[] QUERYINDEXES = new int[]{2, 3, 4, 5, 6, 7};
+    private int[] QUERYINDEXES = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
 
     /**
      * Class to simulate both read and write for a generic repository.

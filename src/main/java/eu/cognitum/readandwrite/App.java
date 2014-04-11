@@ -26,6 +26,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.sail.nativerdf.NativeStore;
 
 /**
  *
@@ -38,13 +39,14 @@ public class App {
     private static final Logger LOGGER = Logger.getLogger(App.class.getName());
 
     public static enum DBS {
-
+        NATIVE,
         TITAN,
         NEO4J,
         ORIENT
     }
 
     private static final String
+        PROP_STORAGE_DIRECTORY = "storage.directory",
         PROP_STORAGE_HOSTNAME = "storage.hostname",
         PROP_STORAGE_KEYSPACE = "storage.keyspace";
 
@@ -71,9 +73,10 @@ public class App {
 
             String ip = CONFIGURATION.getProperty(PROP_STORAGE_HOSTNAME);
             String keyspace = CONFIGURATION.getProperty(PROP_STORAGE_KEYSPACE);
+            String directory = CONFIGURATION.getProperty(PROP_STORAGE_DIRECTORY);
 
             // N of articles to be generated.
-            int Narticles = 100;
+            int Narticles = 1000;
             // size of the buffer to commit each time
             int commitBufferSize = 10;
             // N of articles to commit before trying reads
@@ -87,6 +90,9 @@ public class App {
                 SailRepository sr;
 
                 switch (dbs) {
+                    case NATIVE:
+                        sr = createNativeStoreConnection(directory);
+                        break;
                     case TITAN:
                         sr = createTitanConnection(ip, keyspace);
                         break;
@@ -132,6 +138,18 @@ public class App {
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
         }
+    }
+
+    public static SailRepository createNativeStoreConnection(String directory) throws RepositoryException {
+        File f = new File(directory);
+        if (f.exists()) {
+            f.delete();
+        }
+
+        NativeStore sail = new NativeStore(f);
+        SailRepository sr = new SailRepository(sail);
+        sr.initialize();
+        return sr;
     }
 
     public static SailRepository createNeo4jConnection(String keyspace) throws RepositoryException {

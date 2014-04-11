@@ -1,1 +1,1 @@
-mvn exec:java -Dexec.mainClass="com.mycompany.readandwrite.App"
+mvn -o exec:java -Dexec.mainClass="eu.cognitum.readandwrite.App"

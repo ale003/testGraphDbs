@@ -22,18 +22,19 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.nativerdf.NativeStore;
+import sun.security.provider.certpath.Vertex;
 
 /**
- *
  * @author Alessandro Seganti (Data Engineer @Cognitum)
- * @version     0.0
- * @since       2014-04-10
- * @copyright Cognitum, Poland 2014 
+ * @version 0.0
+ * @copyright Cognitum, Poland 2014
+ * @since 2014-04-10
  */
 public class App {
     private static final Logger LOGGER = Logger.getLogger(App.class.getName());
@@ -46,9 +47,9 @@ public class App {
     }
 
     private static final String
-        PROP_STORAGE_DIRECTORY = "storage.directory",
-        PROP_STORAGE_HOSTNAME = "storage.hostname",
-        PROP_STORAGE_KEYSPACE = "storage.keyspace";
+            PROP_STORAGE_DIRECTORY = "storage.directory",
+            PROP_STORAGE_HOSTNAME = "storage.hostname",
+            PROP_STORAGE_KEYSPACE = "storage.keyspace";
 
     private static Properties CONFIGURATION;
 
@@ -128,7 +129,7 @@ public class App {
                     if (simulateAll.get(k).IsProcessCompleted()) {
                         Nfinished++;
                     } else {
-                        System.out.println(String.format("Process for db %s is at %.2f", dbs.toString(),simulateAll.get(k).GetProgress()));
+                        System.out.println(String.format("Process for db %s is at %.2f", dbs.toString(), simulateAll.get(k).GetProgress()));
                     }
                     k++;
                 }
@@ -153,31 +154,69 @@ public class App {
     }
 
     public static SailRepository createNeo4jConnection(String keyspace) throws RepositoryException {
-        Neo4jGraph graph = new Neo4jGraph("tmp/neo4j/" + keyspace);
+        String path = "tmp/neo4j/" + keyspace;
+        File f = new File(path);
+        if (f.exists()) {
+            f.delete();
+        }
+
+        Neo4jGraph graph = new Neo4jGraph(path);
         SailRepository sr = new SailRepository(new GraphSail(graph));
         sr.initialize();
         return sr;
     }
 
     public static SailRepository createOrientConnection(String keyspace) throws RepositoryException {
-        OrientGraph graph = new OrientGraph("local:tmp/orient/" + keyspace);
+        String path = "tmp/orient/" + keyspace;
+        File f = new File(path);
+        if (f.exists()) {
+            f.delete();
+        }
+
+        OrientGraph graph = new OrientGraph("local:" + path);
         //OrientGraph graph = new OrientGraph("remote:localhost/aaa","root","root");
         SailRepository sr = new SailRepository(new GraphSail(graph));
         sr.initialize();
         return sr;
     }
 
-
     public static SailRepository createTitanConnection(String ip, String keyspace) throws RepositoryException {
+        // note: delete Titan Cassandra's keyspace manually
+
         String backend = "cassandra";
 
         Configuration conf = new BaseConfiguration();
         conf.setProperty("storage.backend", backend);
         conf.setProperty("storage.hostname", ip);
         conf.setProperty("storage.keyspace", keyspace);
+        conf.setProperty("cache.db-cache", "true");
 
         TitanGraph g = TitanFactory.open(conf);
-        SailRepository sr = new SailRepository(new GraphSail(g));
+
+        String indexedPatterns = "p,c,pc";
+
+        if (null == g.getType(GraphSail.INFERRED)) {
+            g.makeKey(GraphSail.INFERRED).dataType(Boolean.class);
+        }
+        if (null == g.getType(GraphSail.KIND)) {
+            g.makeKey(GraphSail.KIND).dataType(String.class);
+        }
+        if (null == g.getType(GraphSail.LANG)) {
+            g.makeKey(GraphSail.LANG).dataType(String.class);
+        }
+        if (null == g.getType(GraphSail.TYPE)) {
+            g.makeKey(GraphSail.TYPE).dataType(String.class);
+        }
+        if (null == g.getType(GraphSail.VALUE)) {
+            g.makeKey(GraphSail.VALUE).dataType(String.class).unique();
+        }
+        for (String pattern : indexedPatterns.split(",")) {
+            if (null == g.getType(pattern)) {
+                g.makeKey(pattern).dataType(String.class);
+            }
+        }
+
+        SailRepository sr = new SailRepository(new GraphSail(g, indexedPatterns));
         sr.initialize();
 
         return sr;

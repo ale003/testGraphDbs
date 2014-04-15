@@ -12,7 +12,7 @@ package eu.cognitum.readandwrite;
 
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
-import com.tinkerpop.blueprints.impls.neo4j.Neo4jGraph;
+import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.oupls.sail.GraphSail;
 
@@ -160,7 +160,7 @@ public class App {
             f.delete();
         }
 
-        Neo4jGraph graph = new Neo4jGraph(path);
+        Neo4j2Graph graph = new Neo4j2Graph(path);
         SailRepository sr = new SailRepository(new GraphSail(graph));
         sr.initialize();
         return sr;

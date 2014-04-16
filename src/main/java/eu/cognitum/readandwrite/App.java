@@ -7,7 +7,6 @@
 // distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
 // See the License for the specific language governing permissions and limitations under the License. 
 // ============================================================================================================== 
-
 package eu.cognitum.readandwrite;
 
 import com.thinkaurelius.titan.core.TitanFactory;
@@ -25,6 +24,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.nativerdf.NativeStore;
@@ -37,6 +37,7 @@ import sun.security.provider.certpath.Vertex;
  * @since 2014-04-10
  */
 public class App {
+
     private static final Logger LOGGER = Logger.getLogger(App.class.getName());
 
     public static enum DBS {
@@ -46,8 +47,7 @@ public class App {
         ORIENT
     }
 
-    private static final String
-            PROP_STORAGE_DIRECTORY = "storage.directory",
+    private static final String PROP_STORAGE_DIRECTORY = "storage.directory",
             PROP_STORAGE_HOSTNAME = "storage.hostname",
             PROP_STORAGE_KEYSPACE = "storage.keyspace";
 
@@ -77,17 +77,20 @@ public class App {
             String directory = CONFIGURATION.getProperty(PROP_STORAGE_DIRECTORY);
 
             // N of articles to be generated.
-            int Narticles = 1000;
+            int Narticles = 100000;
             // size of the buffer to commit each time
-            int commitBufferSize = 10;
+            int commitBufferSize = 100;
             // N of articles to commit before trying reads
-            int readStep = 10;
+            int readStep = 100;
 
             ArrayList<SimulateReadAndWrite> simulateAll = new ArrayList<SimulateReadAndWrite>();
 
             int Ndbs = 0;
-
-            for (DBS dbs : DBS.values()) {
+             
+//            DBS[] chosenDbs = {DBS.TITAN};
+            DBS[] chosenDbs = DBS.values();
+            
+            for (DBS dbs : chosenDbs) {
                 SailRepository sr;
 
                 switch (dbs) {
@@ -125,7 +128,7 @@ public class App {
             while (Nfinished != Ndbs) {
                 Nfinished = 0;
                 k = 0;
-                for (DBS dbs : DBS.values()) {
+                for (DBS dbs : chosenDbs) {
                     if (simulateAll.get(k).IsProcessCompleted()) {
                         Nfinished++;
                     } else {
@@ -221,4 +224,19 @@ public class App {
 
         return sr;
     }
+    
+//    private Repository CreateConnectionVirtuosoGraph(String ip, String port, String keyspace, String username, String password) throws RepositoryException, Exception {
+//        String protocol = "jdbc:virtuoso://";
+//
+//        if (!ip.contains(":" + port) && !ip.contains(":")) {
+//            ip = ip + ":" + port;
+//        } else if (!ip.contains(":" + port) && ip.contains(":")) {
+//            throw new Exception("The port should be set to " + port);
+//        }
+//
+//        Repository sr = new VirtuosoRepository(protocol + ip + "/charset=UTF-8/log_enable=2", username, password);
+//        sr.initialize();
+//        sr.getConnection();
+//        return sr;
+//    }
 }

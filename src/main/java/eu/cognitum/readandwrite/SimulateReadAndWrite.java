@@ -9,9 +9,12 @@
 // ============================================================================================================== 
 package eu.cognitum.readandwrite;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 import org.fusesource.jansi.internal.Kernel32;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
@@ -59,10 +62,13 @@ public class SimulateReadAndWrite extends Thread {
      * @param commitBufferSize Number of element to load before commiting the
      * changes to the Repository.
      */
-    public SimulateReadAndWrite(Repository repExt, String outputNameExt, int Nelements, int readStep, int commitBufferSize, String graphDbUsedExt, String keyspaceExt, String currentNameSpace, boolean skipReading) throws RepositoryException, FileNotFoundException {
+    public SimulateReadAndWrite(Repository repExt, String outputNameExt, int Nelements, int readStep, int commitBufferSize, String graphDbUsedExt, String keyspaceExt, String currentNameSpace,RdfGenerator rdfGen) throws RepositoryException, FileNotFoundException, IOException {
 
         outputName = outputNameExt;
+        
         fileName = outputNameExt+".rdf";
+        String fileGenerated = rdfGen.getFileName();
+        FileUtils.copyFile(new File(fileGenerated),new File(fileName));
         rep = repExt;
         _commitBufferSize = commitBufferSize;
         _NelementsFinal = Nelements;
@@ -70,7 +76,7 @@ public class SimulateReadAndWrite extends Thread {
         graphDbUsed = graphDbUsedExt;
         keyspace = keyspaceExt;
 
-        _rdfGenerator = new GenerateRdf(currentNamespace, fileName);
+        _rdfGenerator = rdfGen;
         _rdfReadHandler = new RdfReadHandler(this, _rdfGenerator, this.currentNamespace);
     }
 
@@ -93,9 +99,6 @@ public class SimulateReadAndWrite extends Thread {
         _finished = _stopped = _error = false;
 
         try {
-            Logger.getLogger(SimulateReadAndWrite.class.getName()).log(Level.INFO,graphDbUsed+": Generating the rdf....");
-            _rdfGenerator.generateAndSaveRdf(_NelementsFinal);
-            Logger.getLogger(SimulateReadAndWrite.class.getName()).log(Level.INFO,graphDbUsed+": Generated an rdf with "+_NelementsFinal+" elements"+_rdfGenerator.getNtriples()+" triples. Starting to read and writing it.");
            _rdfReadHandler.readAll(fileName);
         } catch (Exception ex) {
             _error = true;

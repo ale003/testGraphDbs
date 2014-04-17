@@ -83,13 +83,18 @@ public class App {
             // N of articles to commit before trying reads
             int readStep = 100;
 
+            String currentNamespace = "http://mynamespace#";
+            LOGGER.log(Level.INFO, "Generating the rdf...");
+            GenerateRdf rdfGenerator = new GenerateRdf(currentNamespace, "tmp.rdf");
+            rdfGenerator.generateAndSaveRdf(Narticles);
+            LOGGER.log(Level.INFO, "Generated the rdf!");
             ArrayList<SimulateReadAndWrite> simulateAll = new ArrayList<SimulateReadAndWrite>();
 
             int Ndbs = 0;
-             
-//            DBS[] chosenDbs = {DBS.TITAN};
-            DBS[] chosenDbs = DBS.values();
-            
+
+            DBS[] chosenDbs = {DBS.NATIVE};
+            //DBS[] chosenDbs = DBS.values();
+
             for (DBS dbs : chosenDbs) {
                 SailRepository sr;
 
@@ -115,9 +120,7 @@ public class App {
                     throw new Exception("Something wrong while connecting to " + dbs.toString());
                 }
 
-                String currentNamespace = "http://mynamespace#";
-
-                simulateAll.add(new SimulateReadAndWrite(sr, "test" + dbs.toString(), Narticles, readStep, commitBufferSize, dbs.toString(), keyspace, currentNamespace, false));
+                simulateAll.add(new SimulateReadAndWrite(sr, "test" + dbs.toString(), Narticles, readStep, commitBufferSize, dbs.toString(), keyspace, currentNamespace, rdfGenerator));
 
                 simulateAll.get(Ndbs).start();
                 Ndbs++;
@@ -224,7 +227,7 @@ public class App {
 
         return sr;
     }
-    
+
 //    private Repository CreateConnectionVirtuosoGraph(String ip, String port, String keyspace, String username, String password) throws RepositoryException, Exception {
 //        String protocol = "jdbc:virtuoso://";
 //

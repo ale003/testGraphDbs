@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.time.StopWatch;
 import org.openrdf.model.Model;
@@ -102,8 +103,6 @@ public class GenerateRdf implements RdfGenerator {
 
     public void CloseAllConnections() throws RepositoryException {
         src.close();
-        KeyIndexableGraph graph = ((GraphSail) sr.getSail()).getBaseGraph();
-        graph.shutdown();
         sr.shutDown();
     }
 
@@ -232,10 +231,12 @@ public class GenerateRdf implements RdfGenerator {
         model.setNamespace("ex", "");
 
         Rio.write(model, new java.io.FileWriter(new java.io.File(outputFileName),false), RDFFormat.TURTLE);
+        
+        CloseAllConnections();
     }
 
-    public StdMeasures executeQueries(PrintWriter logInfo, int queryType, int Ntrials,int currentNtriples) {
-        return executeQueries(logInfo, queryType, Ntrials, currentNtriples,false, "fileLog.txt");
+    public StdMeasures executeQueries(RepositoryConnection srcLoc,PrintWriter logInfo, int queryType, int Ntrials,int currentNtriples) {
+        return executeQueries(srcLoc,logInfo, queryType, Ntrials, currentNtriples,false, "fileLog.txt");
     }
 
     /**
@@ -248,9 +249,8 @@ public class GenerateRdf implements RdfGenerator {
      * @return The mean time it took to execute the query
      *
      */
-    public StdMeasures executeQueries(PrintWriter logInfo, int queryType, int Ntrials, int currentNtriples, boolean printlnAllLogs, String fileLog) {
-        StopWatch functionTime = new StopWatch();
-        functionTime.start();
+    public StdMeasures executeQueries(RepositoryConnection srcLoc,PrintWriter logInfo, int queryType, int Ntrials, int currentNtriples, boolean printlnAllLogs, String fileLog) {
+        long functionTime = System.currentTimeMillis();
 
         int currentNArticles = GetNElementGivenTriples(currentNtriples);
         
@@ -298,9 +298,8 @@ public class GenerateRdf implements RdfGenerator {
 
             int Nres = 0;
             for (int i = 0; i < Ntrials; i++) {
-                StopWatch timing = new StopWatch();
-                timing.start();
-                TupleQuery tQuery = src.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
+                long timing = System.currentTimeMillis();
+                TupleQuery tQuery = srcLoc.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
                 TupleQueryResult result = tQuery.evaluate();
                 Nres = 0;
                 while (result.hasNext()) {
@@ -309,8 +308,7 @@ public class GenerateRdf implements RdfGenerator {
                     Nres++;
                 }
 
-                timing.stop();
-                Long tmp = timing.getTime();
+                long tmp = System.currentTimeMillis() - timing ;
                 allTimes.add(tmp);
                 totalTime += tmp;
 
@@ -336,7 +334,7 @@ public class GenerateRdf implements RdfGenerator {
                 swr.close();
             }
 
-            logInfo.println("Full function execution time: " + functionTime.getTime());
+            logInfo.println("Full function execution time: " + (System.currentTimeMillis() - functionTime));
             logInfo.flush();
             return new StdMeasures(mean, std, Nres);
         } catch (Exception ex) {

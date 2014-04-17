@@ -39,7 +39,8 @@ public class RdfReadHandler extends RDFHandlerBase {
 
     protected int _readStep;
     protected int _commitBufferSize = 10;
-    private int[] QUERYINDEXES = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
+    //private int[] QUERYINDEXES = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
+    private int[] QUERYINDEXES = new int[]{2, 3, 4, 5, 6, 7};
     protected int Ntrials = 10;
 
     protected boolean _stop = false;
@@ -77,7 +78,8 @@ public class RdfReadHandler extends RDFHandlerBase {
 
         _swrWrites = new PrintWriter(simRaW.outputName + "AllWrites.csv");
         _swrWrites.write("Ntriples,CommitTime (ms)\n");
-
+        _swrWrites.flush();
+        
         _swrReads = new PrintWriter(simRaW.outputName + "AllReads.csv");
 
         String line = "Ntriples,Ntrials";
@@ -87,7 +89,8 @@ public class RdfReadHandler extends RDFHandlerBase {
             line += ",Mean Query" + qu + "(ms), Std Query" + qu + "(ms), Nres Query" + qu;
         }
         _swrReads.println(line);
-
+        _swrReads.flush();
+        
         _logInfo = new PrintWriter(simRaW.outputName + "LogInfo.txt");
     }
 
@@ -115,7 +118,7 @@ public class RdfReadHandler extends RDFHandlerBase {
             boolean wasCommitted=false;
             
             src.add(st, currentNamespaceUri);
-
+            
             Ntriples++;
 
             if (_stop) {
@@ -128,8 +131,9 @@ public class RdfReadHandler extends RDFHandlerBase {
                 src.commit();
                 Long ts = System.currentTimeMillis() - writeStartTime;
                 _swrWrites.println(String.format("%d,%d", Ntriples, ts + lastCommitTime));
+                _swrWrites.flush();
                 writeStartTime = System.currentTimeMillis();
-                lastCommitTime += writeStartTime;
+                lastCommitTime += ts;
                 wasCommitted=true;
             }
 
@@ -141,8 +145,8 @@ public class RdfReadHandler extends RDFHandlerBase {
                 }*/
                 Long readStartTime= System.currentTimeMillis();
                 executeQueries();
-                
-                writeStartTime -= System.currentTimeMillis()-readStartTime; // substract to the write time the time it took to make the queries.
+                Long deltaRead = System.currentTimeMillis()-readStartTime;
+                writeStartTime -= deltaRead; // substract to the write time the time it took to make the queries.
 
                 NtriplesCompleted=Ntriples; // when finished reading, we have finished Ntriples...
             }
@@ -174,7 +178,7 @@ public class RdfReadHandler extends RDFHandlerBase {
         ArrayList<StdMeasures> measures = new ArrayList<StdMeasures>();
 
         for (int i = 0; i < QUERYINDEXES.length; i++) {
-            measures.add(_rdfGen.executeQueries(_logInfo, QUERYINDEXES[i], Ntrials,Ntriples));
+            measures.add(_rdfGen.executeQueries(src,_logInfo, QUERYINDEXES[i], Ntrials,Ntriples));
         }
 
         // write log
@@ -184,5 +188,6 @@ public class RdfReadHandler extends RDFHandlerBase {
             outp += String.format(",%.2f,%.2f,%d", stdMe.Mean, stdMe.Std, stdMe.Nres);
         }
         _swrReads.println(outp);
+        _swrReads.flush();
     }
 }

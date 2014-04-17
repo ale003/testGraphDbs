@@ -10,6 +10,7 @@
 package eu.cognitum.readandwrite;
 
 import java.io.PrintWriter;
+import org.openrdf.repository.RepositoryConnection;
 
 /**
  *
@@ -30,8 +31,8 @@ public interface RdfGenerator {
      */
     public void generateAndSaveRdf(int Nelements) throws Exception;
     
-    public StdMeasures executeQueries(PrintWriter logInfo, int queryType, int Ntrials,int currentNtriples);
+    public StdMeasures executeQueries(RepositoryConnection srcLoc,PrintWriter logInfo, int queryType, int Ntrials,int currentNtriples);
     
-    public StdMeasures executeQueries(PrintWriter logInfo, int queryType, int Ntrials,int currentNtriples, boolean printlnAllLogs, String fileLog);
+    public StdMeasures executeQueries(RepositoryConnection srcLoc,PrintWriter logInfo, int queryType, int Ntrials,int currentNtriples, boolean printlnAllLogs, String fileLog);
     
 }
